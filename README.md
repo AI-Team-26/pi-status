@@ -33,7 +33,7 @@ pi install npm:pi-status
 From GitHub:
 
 ```sh
-pi install git:github.com/ZoRDoK/pi-idle
+pi install git:github.com/AI-Team-26/pi-status
 ```
 
 ## Test
@@ -43,7 +43,7 @@ npm test        # single run
 npm run test:watch  # watch mode
 ```
 
-CI runs on every push / PR to `master` via GitHub Actions.
+CI runs on every push / PR to `main` via GitHub Actions.
 
 ## License
 
