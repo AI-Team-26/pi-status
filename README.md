@@ -45,6 +45,10 @@ npm run test:watch  # watch mode
 
 CI runs on every push / PR to `main` via GitHub Actions.
 
+## Debug
+
+Set `PI_STATUS_DEBUG=1` to log title state transitions (spinner start/stop, restore) to stderr.
+
 ## License
 
 [MIT](LICENSE)

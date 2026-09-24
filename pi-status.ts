@@ -42,34 +42,68 @@ function getContextIndicator(ctx: ExtensionContext): string {
 export default function (pi: ExtensionAPI) {
 	let timer: ReturnType<typeof setInterval> | null = null;
 	let frameIndex = 0;
+	// Latest context seen by any handler; the spinner interval must not keep
+	// using a stale context captured at spinner start.
+	let currentCtx: ExtensionContext | null = null;
+
+	const DEBUG = process.env.PI_STATUS_DEBUG === "1";
+	function log(msg: string) {
+		if (DEBUG) console.error(`[pi-status] ${msg}`);
+	}
+
+	// A throwing setTitle (or title computation) inside the interval callback
+	// would kill the timer and freeze the title forever — always catch.
+	function safeSetTitle(ctx: ExtensionContext, title: string) {
+		try {
+			ctx.ui.setTitle(title);
+		} catch (err) {
+			console.error("[pi-status] setTitle failed:", err);
+		}
+	}
 
 	function stopSpinner() {
-		if (timer) { clearInterval(timer); timer = null; }
+		if (timer) { clearInterval(timer); timer = null; log("spinner stopped"); }
 		frameIndex = 0;
 	}
 
 	function restoreTitle(ctx: ExtensionContext) {
-		ctx.ui.setTitle(`✅${getContextIndicator(ctx)} ${getBaseTitle(pi)}`);
+		log("restoring idle title");
+		try {
+			safeSetTitle(ctx, `✅${getContextIndicator(ctx)} ${getBaseTitle(pi)}`);
+		} catch (err) {
+			console.error("[pi-status] restore failed:", err);
+		}
 	}
 
-	function showSpinnerFrame(ctx: ExtensionContext) {
-		const baseTitle = getBaseTitle(pi);
-		ctx.ui.setTitle(`${SPINNER_FRAMES[frameIndex % SPINNER_FRAMES.length]} ${baseTitle}`);
+	function showSpinnerFrame() {
+		const ctx = currentCtx;
+		if (!ctx) return;
+		try {
+			safeSetTitle(ctx, `${SPINNER_FRAMES[frameIndex % SPINNER_FRAMES.length]} ${getBaseTitle(pi)}`);
+		} catch (err) {
+			console.error("[pi-status] spinner frame failed:", err);
+		}
 		frameIndex = (frameIndex + 1) % SPINNER_FRAMES.length;
 	}
 
 	function startSpinner(ctx: ExtensionContext) {
+		currentCtx = ctx;
 		if (timer) { frameIndex = 0; return; }
 		frameIndex = 0;
-		showSpinnerFrame(ctx);
-		timer = setInterval(() => showSpinnerFrame(ctx), 2000);
+		showSpinnerFrame();
+		timer = setInterval(showSpinnerFrame, 2000);
 		(timer as any).unref?.();
+		log("spinner started");
 	}
 
-	pi.on("session_start", (_e, ctx) => setImmediate(() => restoreTitle(ctx)));
+	pi.on("session_start", (_e, ctx) => setImmediate(() => {
+		stopSpinner(); // clear any interval leaked from a previous session
+		currentCtx = ctx;
+		restoreTitle(ctx);
+	}));
 	pi.on("input", (_e, ctx) => startSpinner(ctx));
 	pi.on("agent_start", (_e, ctx) => startSpinner(ctx));
 	pi.on("turn_start", (_e, ctx) => startSpinner(ctx));
-	pi.on("agent_end", (_e, ctx) => { stopSpinner(); restoreTitle(ctx); });
-	pi.on("session_shutdown", (_e, ctx) => { stopSpinner(); ctx.ui.setTitle(getBaseTitle(pi)); });
+	pi.on("agent_end", (_e, ctx) => { currentCtx = ctx; stopSpinner(); restoreTitle(ctx); });
+	pi.on("session_shutdown", (_e, ctx) => { stopSpinner(); safeSetTitle(ctx, getBaseTitle(pi)); });
 }
