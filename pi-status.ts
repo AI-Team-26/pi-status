@@ -29,16 +29,6 @@ function log(msg: string) {
 	if (DEBUG) console.error(`[pi-status] ${msg}`);
 }
 
-/** Direct OSC title set as fallback for terminals where pi API setTitle doesn't work (e.g., GitBash/Windows Terminal) */
-function setTitleDirect(title: string) {
-	try {
-		// OSC 2: set window title; BEL (\007) terminates
-		process.stdout.write(`\x1b]2;${title}\x07`);
-	} catch {
-		// ignore
-	}
-}
-
 function getBaseTitle(pi: ExtensionAPI): string {
 	const cwd = path.basename(process.cwd());
 	const session = pi.getSessionName();
@@ -67,12 +57,8 @@ export default function (pi: ExtensionAPI) {
 	function safeSetTitle(ctx: ExtensionContext, title: string) {
 		try {
 			ctx.ui.setTitle(title);
-			// Also write directly to stdout as fallback for terminals where pi API doesn't propagate the title
-			setTitleDirect(title);
 		} catch (err) {
 			console.error("[pi-status] setTitle failed:", err);
-			// Fallback: try direct write even if pi API threw
-			setTitleDirect(title);
 		}
 	}
 
@@ -88,12 +74,6 @@ export default function (pi: ExtensionAPI) {
 			safeSetTitle(ctx, title);
 		} catch (err) {
 			console.error("[pi-status] restore failed:", err);
-			// Last resort: try direct write with basic title
-			try {
-				setTitleDirect(`✅ ${getBaseTitle(pi)}`);
-			} catch {
-				// ignore
-			}
 		}
 	}
 
