@@ -30,3 +30,8 @@ pi install https://github.com/AI-Team-26/pi-status
 npm test        # single run
 npm run test:watch  # watch mode
 ```
+
+
+## License
+
+[MIT](LICENSE)

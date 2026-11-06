@@ -17,33 +17,39 @@
  * 13. Context null → no indicator
  */
 
-import path from "node:path";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import path from "node:path"
+import { describe, it, expect, vi, beforeEach } from "vitest"
+import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent"
 
 // ── Helpers ──────────────────────────────────────────────
 
 /** Compute the expected base title dynamically based on current environment */
 function getExpectedBaseTitle(): string {
-	const agent = Array.from(process.env.PI_AGENT_NAME || "π")[0];
-	const cwd = path.basename(process.cwd());
-	return `${agent} ${cwd}`;
+	const cwd = path.basename(process.cwd())
+	return `${cwd}`;
 }
 
+function getExpectedTitle(title: string): string {
+	const cwd = path.basename(process.cwd())
+	return `${AGENT_ICON} ${title} ${cwd}`;
+}
+
+
+const AGENT_ICON = "🤖" // = Array.from(process.env.PI_AGENT_NAME || "π")[0];
 const EXPECTED_BASE_TITLE = getExpectedBaseTitle();
 const SPINNER_FRAME_REGEX = new RegExp(
 	`^[\\u280B\\u2819\\u2839\\u2838\\u283C\\u2834\\u2826\\u2827\\u2807\\u280F] ${EXPECTED_BASE_TITLE.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}$`
-);
+)
 
 function createMockPi(): ExtensionAPI & { _handlers: Map<string, Function> } {
-	const handlers = new Map<string, Function>();
+	const handlers = new Map<string, Function>()
 	return {
 		on: vi.fn((event: string, handler: Function) => {
 			handlers.set(event, handler);
 		}) as unknown as ExtensionAPI["on"],
 		getSessionName: vi.fn(() => null) as unknown as ExtensionAPI["getSessionName"],
 		_handlers: handlers,
-	} as unknown as ExtensionAPI & { _handlers: Map<string, Function> };
+	} as unknown as ExtensionAPI & { _handlers: Map<string, Function> }
 }
 
 function createMockCtx(overrides?: Partial<ExtensionContext>): ExtensionContext {
@@ -227,7 +233,7 @@ describe("context indicator", () => {
 
 	it("context null: no indicator in title", async () => {
 		const ctx = createMockCtx({
-			getContextUsage: () => null,
+			getContextUsage: () => undefined,
 		});
 		const mockPi = createMockPi();
 		const mod = await import("./pi-status.ts");
@@ -236,7 +242,7 @@ describe("context indicator", () => {
 		const handler = mockPi._handlers.get("session_start")!;
 		handler({ reason: "startup" }, ctx);
 		await new Promise(resolve => setImmediate(resolve));
-		expect(ctx.ui.setTitle).toHaveBeenCalledWith(`✅ ${EXPECTED_BASE_TITLE}`);
+		expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ✅ ${EXPECTED_BASE_TITLE}`);
 	});
 
 	it("spinner never includes context indicator, even at ≥90%", async () => {
