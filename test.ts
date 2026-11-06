@@ -33,7 +33,6 @@ function getExpectedBaseTitle(): string {
 // Normalise icon env vars so tests are deterministic regardless of the ambient
 // environment (which may export PI_STATUS_*_ICON). The module reads these once
 // at import time, so they must be settled before the first dynamic import.
-delete process.env.PI_STATUS_DONE_ICON
 delete process.env.PI_STATUS_IDLE_ICON
 
 const AGENT_ICON = "🤖"
@@ -194,10 +193,10 @@ describe("extension handlers", () => {
 
 // ── Done icon override ─────────────────────────────────
 
-describe("done icon override", () => {
-    it("uses PI_STATUS_DONE_ICON when set", async () => {
-        const prev = process.env.PI_STATUS_DONE_ICON
-        process.env.PI_STATUS_DONE_ICON = "🏁"
+describe("idle icon override", () => {
+    it("uses PI_STATUS_IDLE_ICON when set", async () => {
+        const prev = process.env.PI_STATUS_IDLE_ICON
+        process.env.PI_STATUS_IDLE_ICON = "🏁"
         vi.resetModules()
         try {
             const mod = await import("./pi-status.ts")
@@ -208,8 +207,8 @@ describe("done icon override", () => {
             await handler({ messages: [] }, ctx)
             expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} 🏁 ${EXPECTED_BASE_TITLE}`)
         } finally {
-            if (prev === undefined) delete process.env.PI_STATUS_DONE_ICON
-            else process.env.PI_STATUS_DONE_ICON = prev
+            if (prev === undefined) delete process.env.PI_STATUS_IDLE_ICON
+            else process.env.PI_STATUS_IDLE_ICON = prev
             vi.resetModules()
         }
     })

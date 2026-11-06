@@ -22,8 +22,7 @@ const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", 
 
 //const AGENT_ICON = Array.from(process.env.PI_STATUS_AGENT_ICON || "π")
 const AGENT_ICON = process.env.PI_STATUS_AGENT_ICON || "π"
-// PI_STATUS_DONE_ICON overrides the idle/done icon; PI_STATUS_IDLE_ICON kept as legacy fallback.
-const DONE_ICON = process.env.PI_STATUS_DONE_ICON || process.env.PI_STATUS_IDLE_ICON || "✔️"
+const IDLE_ICON = process.env.PI_STATUS_IDLE_ICON || "✔️"
 
 const DEBUG = process.env.PI_STATUS_DEBUG === "1"
 function log(msg: string) {
@@ -75,7 +74,7 @@ export default function (pi: ExtensionAPI) {
     function restoreTitle(ctx: ExtensionContext) {
         log("restoring idle title")
         try {
-            const title = `${DONE_ICON}${getContextIndicator(ctx)} ${getBaseTitle(pi)}`
+            const title = `${IDLE_ICON}${getContextIndicator(ctx)} ${getBaseTitle(pi)}`
             safeSetTitle(ctx, title)
         } catch (err) {
             console.error("[pi-status] restore failed:", err)
