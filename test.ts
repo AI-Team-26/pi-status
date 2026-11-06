@@ -29,12 +29,12 @@ function getExpectedBaseTitle(): string {
     return `${cwd}`
 }
 
-// Must mirror pi-status.ts exactly: Array.from(env || "π") interpolated into a template.
-const AGENT_ICON = Array.from(process.env.PI_STATUS_AGENT_ICON || "π").join("")
+
+const AGENT_ICON = "🤖"
+process.env.PI_STATUS_AGENT_ICON = AGENT_ICON
 const EXPECTED_BASE_TITLE = getExpectedBaseTitle()
-const ESCAPED_ICON = AGENT_ICON.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 const SPINNER_FRAME_REGEX = new RegExp(
-    `^${ESCAPED_ICON} [\\u280B\\u2819\\u2839\\u2838\\u283C\\u2834\\u2826\\u2827\\u2807\\u280F] ${EXPECTED_BASE_TITLE.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}$`,
+    `^${AGENT_ICON} [\\u280B\\u2819\\u2839\\u2838\\u283C\\u2834\\u2826\\u2827\\u2807\\u280F] ${EXPECTED_BASE_TITLE.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}$`,
 )
 
 function createMockPi(): ExtensionAPI & { _handlers: Map<string, Function> } {
@@ -60,8 +60,8 @@ function createMockCtx(overrides?: Partial<ExtensionContext>): ExtensionContext 
         } as unknown as ExtensionContext["ui"],
         getContextUsage: vi.fn(() => ({
             percent: 25,
-            tokens: 25000,
-            contextWindow: 100000,
+            tokens: 25_000,
+            contextWindow: 100_000,
         })),
         hasUI: true,
         ...overrides,
@@ -192,8 +192,8 @@ describe("context indicator", () => {
         const ctx = createMockCtx({
             getContextUsage: () => ({
                 percent: 49.9,
-                tokens: 49900,
-                contextWindow: 100000,
+                tokens: 49_900,
+                contextWindow: 100_000,
             }),
         })
         const mockPi = createMockPi()
@@ -210,8 +210,8 @@ describe("context indicator", () => {
         const ctx = createMockCtx({
             getContextUsage: () => ({
                 percent: 63.7,
-                tokens: 63700,
-                contextWindow: 100000,
+                tokens: 63_700,
+                contextWindow: 100_000,
             }),
         })
         const mockPi = createMockPi()
@@ -228,8 +228,8 @@ describe("context indicator", () => {
         const ctx = createMockCtx({
             getContextUsage: () => ({
                 percent: 95,
-                tokens: 95000,
-                contextWindow: 100000,
+                tokens: 95_000,
+                contextWindow: 100_000,
             }),
         })
         const mockPi = createMockPi()
@@ -256,12 +256,12 @@ describe("context indicator", () => {
         expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ✅ ${EXPECTED_BASE_TITLE}`)
     })
 
-    it("spinner never includes context indicator, even at ≥90%", async () => {
+    it("spinner on: context is not shown, even at ≥90%", async () => {
         const ctx = createMockCtx({
             getContextUsage: () => ({
                 percent: 91,
-                tokens: 91000,
-                contextWindow: 100000,
+                tokens: 91_000,
+                contextWindow: 100_000,
             }),
         })
         const mockPi = createMockPi()
