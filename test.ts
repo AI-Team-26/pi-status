@@ -31,6 +31,7 @@ function getExpectedBaseTitle(): string {
 
 
 const AGENT_ICON = "🤖"
+process.env.PI_STATUS_AGENT_ICON = AGENT_ICON
 const EXPECTED_BASE_TITLE = getExpectedBaseTitle()
 const SPINNER_FRAME_REGEX = new RegExp(
     `^${AGENT_ICON} [\\u280B\\u2819\\u2839\\u2838\\u283C\\u2834\\u2826\\u2827\\u2807\\u280F] ${EXPECTED_BASE_TITLE.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}$`,
