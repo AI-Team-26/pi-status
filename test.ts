@@ -29,16 +29,12 @@ function getExpectedBaseTitle(): string {
 	return `${cwd}`;
 }
 
-function getExpectedTitle(title: string): string {
-	const cwd = path.basename(process.cwd())
-	return `${AGENT_ICON} ${title} ${cwd}`;
-}
-
-
-const AGENT_ICON = "🤖" // = Array.from(process.env.PI_AGENT_NAME || "π")[0];
+// Must mirror pi-status.ts exactly: Array.from(env || "π") interpolated into a template.
+const AGENT_ICON = Array.from(process.env.PI_STATUS_AGENT_ICON || "π").join("");
 const EXPECTED_BASE_TITLE = getExpectedBaseTitle();
+const ESCAPED_ICON = AGENT_ICON.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const SPINNER_FRAME_REGEX = new RegExp(
-	`^[\\u280B\\u2819\\u2839\\u2838\\u283C\\u2834\\u2826\\u2827\\u2807\\u280F] ${EXPECTED_BASE_TITLE.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}$`
+	`^${ESCAPED_ICON} [\\u280B\\u2819\\u2839\\u2838\\u283C\\u2834\\u2826\\u2827\\u2807\\u280F] ${EXPECTED_BASE_TITLE.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}$`
 )
 
 function createMockPi(): ExtensionAPI & { _handlers: Map<string, Function> } {
@@ -112,7 +108,7 @@ describe("extension handlers", () => {
 		// session_start defers to setImmediate so pi's init-based
 		// updateTerminalTitle() fires first; wait for the deferred call.
 		await new Promise(resolve => setImmediate(resolve));
-		expect(ctx.ui.setTitle).toHaveBeenCalledWith(`✅ ${EXPECTED_BASE_TITLE}`);
+		expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ✅ ${EXPECTED_BASE_TITLE}`);
 		expect(ctx.ui.setStatus).not.toHaveBeenCalled();
 	});
 
@@ -173,7 +169,7 @@ describe("extension handlers", () => {
 		const handler = mockPi._handlers.get("agent_end")!;
 		await handler({ messages: [] }, ctx);
 
-		expect(ctx.ui.setTitle).toHaveBeenCalledWith(`✅ ${EXPECTED_BASE_TITLE}`);
+		expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ✅ ${EXPECTED_BASE_TITLE}`);
 	});
 
 	it("session_shutdown sets plain base title", async () => {
@@ -181,7 +177,7 @@ describe("extension handlers", () => {
 		const handler = mockPi._handlers.get("session_shutdown")!;
 		await handler({ reason: "quit" }, ctx);
 
-		expect(ctx.ui.setTitle).toHaveBeenCalledWith(EXPECTED_BASE_TITLE);
+		expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ${EXPECTED_BASE_TITLE}`);
 		expect(ctx.ui.setStatus).not.toHaveBeenCalled();
 	});
 });
@@ -189,9 +185,10 @@ describe("extension handlers", () => {
 // ── Context indicator ────────────────────────────────────
 
 describe("context indicator", () => {
-	it("≤50%: no indicator in title", async () => {
+	// Code hides the indicator only for percent < 50 (docstring says ≤ 50).
+	it("<50%: no indicator in title", async () => {
 		const ctx = createMockCtx({
-			getContextUsage: () => ({ percent: 50, tokens: 50000, contextWindow: 100000 }),
+			getContextUsage: () => ({ percent: 49.9, tokens: 49900, contextWindow: 100000 }),
 		});
 		const mockPi = createMockPi();
 		const mod = await import("./pi-status.ts");
@@ -200,7 +197,7 @@ describe("context indicator", () => {
 		const handler = mockPi._handlers.get("session_start")!;
 		handler({ reason: "startup" }, ctx);
 		await new Promise(resolve => setImmediate(resolve));
-		expect(ctx.ui.setTitle).toHaveBeenCalledWith(`✅ ${EXPECTED_BASE_TITLE}`);
+		expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ✅ ${EXPECTED_BASE_TITLE}`);
 	});
 
 	it(">50% and <90%: shows [N%] in title", async () => {
@@ -214,7 +211,7 @@ describe("context indicator", () => {
 		const handler = mockPi._handlers.get("session_start")!;
 		handler({ reason: "startup" }, ctx);
 		await new Promise(resolve => setImmediate(resolve));
-		expect(ctx.ui.setTitle).toHaveBeenCalledWith(`✅ [64%] ${EXPECTED_BASE_TITLE}`);
+		expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ✅ [64%] ${EXPECTED_BASE_TITLE}`);
 	});
 
 	it("≥90%: shows ![N%]! in title", async () => {
@@ -228,7 +225,7 @@ describe("context indicator", () => {
 		const handler = mockPi._handlers.get("session_start")!;
 		handler({ reason: "startup" }, ctx);
 		await new Promise(resolve => setImmediate(resolve));
-		expect(ctx.ui.setTitle).toHaveBeenCalledWith(`✅ ![95%]! ${EXPECTED_BASE_TITLE}`);
+		expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ✅ ![95%]! ${EXPECTED_BASE_TITLE}`);
 	});
 
 	it("context null: no indicator in title", async () => {
