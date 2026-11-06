@@ -1,14 +1,13 @@
 {
 	"name": "pi-status",
-	"version": "1.0.7",
+	"version": "1.0.8",
 	"description": "Pi extension: shows green ✓ in terminal title when idle, braille-dot spinner (⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏) while working, with context-usage percentage beside the checkmark",
 	"keywords": [
 		"status",
 		"idle",
 		"done",
 		"spinner",
-		"pi-extension",
-		"pi-package"
+		"pi-extension"
 	],
 	"type": "module",
 	"license": "MIT",
@@ -29,6 +28,8 @@
 		]
 	},
 	"devDependencies": {
-		"vitest": "^3.2.4"
+        "@earendil-works/pi-coding-agent": "^1.5.0",
+        "typescript": "^7.0.2",
+		"vitest": "^5.1.0"
 	}
 }
