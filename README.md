@@ -4,18 +4,18 @@ A [pi](https://github.com/earendil-works/pi-coding-agent) extension that puts a 
 
 ## Title format
 
-| State | Title |
-|---|---|
-| Idle (≤ 50 % context) | `✓ π - session - project` |
-| Idle (> 50 % context) | `✓ [63%] π - session - project` |
+| State                 | Title                             |
+| --------------------- | --------------------------------- |
+| Idle (≤ 50 % context) | `✓ π - session - project`         |
+| Idle (> 50 % context) | `✓ [63%] π - session - project`   |
 | Idle (≥ 90 % context) | `✓ ![95%]! π - session - project` |
-| Working | `⠋ π - session - project` |
-| Shutdown | `π - session - project` |
+| Working               | `⠋ π - session - project`         |
+| Shutdown              | `π - session - project`           |
 
 - The context-usage percentage is shown **only** beside the checkmark — never during the spinner. It's captured once when the agent finishes, not updated live.
 - `≤ 50 %` → percentage hidden; `> 50 %` → `[N%]`; `≥ 90 %` → `![N%]!` (high-usage warning).
 - ANSI colours don't work inside terminal-title OSC sequences, so everything is plain text.
-  
+
 If an environment variable **PI_STATUS_AGENT_ICON** is found, it uses it in the terminal title; can be an EMOJI !
 
 ## Install
@@ -30,7 +30,6 @@ pi install https://github.com/AI-Team-26/pi-status
 npm test        # single run
 npm run test:watch  # watch mode
 ```
-
 
 ## License
 
