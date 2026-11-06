@@ -16,7 +16,7 @@ A [pi](https://github.com/earendil-works/pi-coding-agent) extension that puts a 
 - `≤ 50 %` → percentage hidden; `> 50 %` → `[N%]`; `≥ 90 %` → `![N%]!` (high-usage warning).
 - ANSI colours don't work inside terminal-title OSC sequences, so everything is plain text.
   
-If an environment variable **AGENT_NICKNAME** is found, it uses it in the terminal title; can be an EMOJI !
+If an environment variable **PI_STATUS_AGENT_ICON** is found, it uses it in the terminal title; can be an EMOJI !
 
 ## Install
 
