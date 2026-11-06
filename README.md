@@ -24,6 +24,10 @@ The base title is `session - project` (or just `project` without a session name)
 
 Set the **PI_STATUS_AGENT_ICON** environment variable to customise the leading icon (e.g. an emoji). Defaults to `π`. Note: only single-character values are supported for now.
 
+### Done icon
+
+Set the **PI_STATUS_DONE_ICON** environment variable to override the icon shown while pi is idle/done. Defaults to `✔️`.
+
 
 ## Install
 

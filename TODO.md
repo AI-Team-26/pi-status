@@ -2,4 +2,6 @@
 
 ## Backlog
 - Feature 5 | **[docs/05_readme_snapshots]** Update the screenshots/snapshots in the README
-- Feature 6 | Use a env var (PI_STATUS_DONE_ICON) to override the "done" icon, use ✔️  as default instead of ✅
+
+## Done
+- [feat/06_done_icon_env] PI_STATUS_DONE_ICON env var overrides the done/idle icon (default ✔️)
