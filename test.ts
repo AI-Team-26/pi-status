@@ -33,7 +33,7 @@ function getExpectedBaseTitle(): string {
 const AGENT_ICON = "🤖"
 const IDLE_ICON = "✔️"
 process.env.PI_STATUS_AGENT_ICON = AGENT_ICON
-process.env.IDLE_ICON = "✔️"
+process.env.PI_STATUS_IDLE_ICON = IDLE_ICON
 
 const EXPECTED_BASE_TITLE = getExpectedBaseTitle()
 const SPINNER_FRAME_REGEX = new RegExp(
@@ -184,6 +184,29 @@ describe("extension handlers", () => {
 
         expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ${EXPECTED_BASE_TITLE}`)
         expect(ctx.ui.setStatus).not.toHaveBeenCalled()
+    })
+})
+
+// ── Done icon override ─────────────────────────────────
+
+describe("idle icon override", () => {
+    it("uses PI_STATUS_IDLE_ICON when set", async () => {
+        const prev = process.env.PI_STATUS_IDLE_ICON
+        process.env.PI_STATUS_IDLE_ICON = "🏁"
+        vi.resetModules()
+        try {
+            const mod = await import("./pi-status.ts")
+            const mockPi = createMockPi()
+            mod.default(mockPi as unknown as ExtensionAPI)
+            const ctx = createMockCtx() // 25% ≤ 50%
+            const handler = mockPi._handlers.get("agent_end")!
+            await handler({ messages: [] }, ctx)
+            expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} 🏁 ${EXPECTED_BASE_TITLE}`)
+        } finally {
+            if (prev === undefined) delete process.env.PI_STATUS_IDLE_ICON
+            else process.env.PI_STATUS_IDLE_ICON = prev
+            vi.resetModules()
+        }
     })
 })
 

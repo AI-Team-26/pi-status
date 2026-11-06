@@ -1,6 +1,6 @@
 # pi-status
 
-A [pi](https://github.com/earendil-works/pi-coding-agent) extension that puts a **✅ green checkmark** in your terminal title when the agent is idle, and a **⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏ braille-dot spinner** while it's working — so you can tell at a glance whether pi is done or still thinking.
+A [pi](https://github.com/earendil-works/pi-coding-agent) extension that puts a **✔️ green checkmark** in your terminal title when the agent is idle, and a **⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏ braille-dot spinner** while it's working — so you can tell at a glance whether pi is done or still thinking.
   
 [![Test](https://github.com/AI-Team-26/pi-status/actions/workflows/test.yml/badge.svg)](https://github.com/AI-Team-26/pi-status/actions/workflows/test.yml)
 
@@ -10,9 +10,9 @@ The base title is `session - project` (or just `project` without a session name)
 
 | State                       | Title                                   |
 | --------------------------- | --------------------------------------- |
-| Idle (< 50 % context)       | `π ✅ session - project`                |
-| Idle (50 – 89 % context)    | `π ✅ [63%] session - project`          |
-| Idle (≥ 90 % context)       | `π ✅ ![95%]! session - project`        |
+| Idle (< 50 % context)       | `π ✔️ session - project`                |
+| Idle (50 – 89 % context)    | `π ✔️ [63%] session - project`          |
+| Idle (≥ 90 % context)       | `π ✔️ ![95%]! session - project`        |
 | Working                     | `π ⠋ session - project`                 |
 | Shutdown                    | `π session - project`                   |
 
@@ -23,6 +23,10 @@ The base title is `session - project` (or just `project` without a session name)
 ### Agent icon
 
 Set the **PI_STATUS_AGENT_ICON** environment variable to customise the leading icon (e.g. an emoji). Defaults to `π`. Note: only single-character values are supported for now.
+
+### Idle icon
+
+Set the **PI_STATUS_IDLE_ICON** environment variable to override the icon shown while pi is idle. Defaults to `✔️`.
 
 
 ## Install
