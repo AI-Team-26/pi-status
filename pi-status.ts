@@ -1,14 +1,13 @@
 /**
  * Pi Status Extension
  *
- * Shows a green checkmark (✅) in the **terminal title** when pi is idle
- * (session finished, waiting for user input). When the user submits
- * a prompt, the checkmark becomes a braille-dot spinner (⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏).
+ * Shows a idle icon (✔️ as default) in the **terminal title** when pi is idle (session finished, waiting for user input). 
+ * When the user submits a prompt, the idle icon is replaced by a braille-dot spinner (⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏).
  *
  * Context-usage percentage appears beside the checkmark (idle state) in the title:
  *   ≤ 50%  → not shown
- *   > 50%  → [N%]   (e.g. ✅ [63%] 🟢 project)
- *   ≥ 90%  → ![N%]!  (e.g. ✅ ![95%]! 🟢 project)
+ *   > 50%  → [N%]   (e.g. ✔️ [63%] project)
+ *   ≥ 90%  → ![N%]!  (e.g. ✔️ ![95%]! project)
  * The percentage is captured once when the checkmark is shown; the spinner never displays it.
  *
  * Usage:
@@ -23,6 +22,7 @@ const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", 
 
 //const AGENT_ICON = Array.from(process.env.PI_STATUS_AGENT_ICON || "π")
 const AGENT_ICON = process.env.PI_STATUS_AGENT_ICON || "π"
+const IDLE_ICON = process.env.PI_STATUS_IDLE_ICON || "✔️"
 
 const DEBUG = process.env.PI_STATUS_DEBUG === "1"
 function log(msg: string) {
@@ -74,7 +74,7 @@ export default function (pi: ExtensionAPI) {
     function restoreTitle(ctx: ExtensionContext) {
         log("restoring idle title")
         try {
-            const title = `✅${getContextIndicator(ctx)} ${getBaseTitle(pi)}`
+            const title = `${IDLE_ICON}${getContextIndicator(ctx)} ${getBaseTitle(pi)}`
             safeSetTitle(ctx, title)
         } catch (err) {
             console.error("[pi-status] restore failed:", err)

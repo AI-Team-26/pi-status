@@ -31,7 +31,10 @@ function getExpectedBaseTitle(): string {
 
 
 const AGENT_ICON = "🤖"
+const IDLE_ICON = "✔️"
 process.env.PI_STATUS_AGENT_ICON = AGENT_ICON
+process.env.IDLE_ICON = "✔️"
+
 const EXPECTED_BASE_TITLE = getExpectedBaseTitle()
 const SPINNER_FRAME_REGEX = new RegExp(
     `^${AGENT_ICON} [\\u280B\\u2819\\u2839\\u2838\\u283C\\u2834\\u2826\\u2827\\u2807\\u280F] ${EXPECTED_BASE_TITLE.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}$`,
@@ -110,7 +113,7 @@ describe("extension handlers", () => {
         // session_start defers to setImmediate so pi's init-based
         // updateTerminalTitle() fires first; wait for the deferred call.
         await new Promise((resolve) => setImmediate(resolve))
-        expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ✅ ${EXPECTED_BASE_TITLE}`)
+        expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ${IDLE_ICON} ${EXPECTED_BASE_TITLE}`)
         expect(ctx.ui.setStatus).not.toHaveBeenCalled()
     })
 
@@ -171,7 +174,7 @@ describe("extension handlers", () => {
         const handler = mockPi._handlers.get("agent_end")!
         await handler({ messages: [] }, ctx)
 
-        expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ✅ ${EXPECTED_BASE_TITLE}`)
+        expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ${IDLE_ICON} ${EXPECTED_BASE_TITLE}`)
     })
 
     it("session_shutdown sets plain base title", async () => {
@@ -203,7 +206,7 @@ describe("context indicator", () => {
         const handler = mockPi._handlers.get("session_start")!
         handler({ reason: "startup" }, ctx)
         await new Promise((resolve) => setImmediate(resolve))
-        expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ✅ ${EXPECTED_BASE_TITLE}`)
+        expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ${IDLE_ICON} ${EXPECTED_BASE_TITLE}`)
     })
 
     it(">50% and <90%: shows [N%] in title", async () => {
@@ -221,7 +224,7 @@ describe("context indicator", () => {
         const handler = mockPi._handlers.get("session_start")!
         handler({ reason: "startup" }, ctx)
         await new Promise((resolve) => setImmediate(resolve))
-        expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ✅ [64%] ${EXPECTED_BASE_TITLE}`)
+        expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ${IDLE_ICON} [64%] ${EXPECTED_BASE_TITLE}`)
     })
 
     it("≥90%: shows ![N%]! in title", async () => {
@@ -239,7 +242,7 @@ describe("context indicator", () => {
         const handler = mockPi._handlers.get("session_start")!
         handler({ reason: "startup" }, ctx)
         await new Promise((resolve) => setImmediate(resolve))
-        expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ✅ ![95%]! ${EXPECTED_BASE_TITLE}`)
+        expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ${IDLE_ICON} ![95%]! ${EXPECTED_BASE_TITLE}`)
     })
 
     it("context null: no indicator in title", async () => {
@@ -253,7 +256,7 @@ describe("context indicator", () => {
         const handler = mockPi._handlers.get("session_start")!
         handler({ reason: "startup" }, ctx)
         await new Promise((resolve) => setImmediate(resolve))
-        expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ✅ ${EXPECTED_BASE_TITLE}`)
+        expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ${IDLE_ICON} ${EXPECTED_BASE_TITLE}`)
     })
 
     it("spinner on: context is not shown, even at ≥90%", async () => {

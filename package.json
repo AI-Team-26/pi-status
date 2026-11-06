@@ -1,7 +1,7 @@
 {
   "name": "pi-status",
   "version": "1.0.8",
-  "description": "Pi extension: shows green ✓ in terminal title when idle, braille-dot spinner (⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏) while working, with context-usage percentage beside the checkmark",
+  "description": "Pi extension: shows green check icon (✔️, but customizable) in terminal title when idle or a spinner (⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏) while working, with context-usage percentage beside the checkmark",
   "keywords": [
     "status",
     "idle",
