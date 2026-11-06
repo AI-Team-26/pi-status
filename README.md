@@ -4,6 +4,12 @@ A [pi](https://github.com/earendil-works/pi-coding-agent) extension that puts a 
   
 [![Test](https://github.com/AI-Team-26/pi-status/actions/workflows/test.yml/badge.svg)](https://github.com/AI-Team-26/pi-status/actions/workflows/test.yml)
 
+## Snapshots
+
+| Idle | Working |
+| ---- | ------- |
+| ![Idle state](assets/idle.png) | ![Working state](assets/spinner.png) |
+
 ## Title format
 
 The base title is `session - project` (or just `project` without a session name), always prefixed by the agent icon:
