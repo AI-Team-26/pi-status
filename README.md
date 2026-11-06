@@ -16,24 +16,10 @@ A [pi](https://github.com/earendil-works/pi-coding-agent) extension that puts a 
 - `≤ 50 %` → percentage hidden; `> 50 %` → `[N%]`; `≥ 90 %` → `![N%]!` (high-usage warning).
 - ANSI colours don't work inside terminal-title OSC sequences, so everything is plain text.
 
-## Screenshots
-
-| Working | Idle |
-|---|---|
-| ![spinner](assets/spinner.svg) | ![idle](assets/idle.png) |
-
 ## Install
 
-From npm:
-
 ```sh
-pi install npm:pi-status
-```
-
-From GitHub:
-
-```sh
-pi install git:github.com/AI-Team-26/pi-status
+pi install https://github.com/AI-Team-26/pi-status
 ```
 
 ## Test
@@ -42,13 +28,3 @@ pi install git:github.com/AI-Team-26/pi-status
 npm test        # single run
 npm run test:watch  # watch mode
 ```
-
-CI runs on every push / PR to `main` via GitHub Actions.
-
-## Debug
-
-Set `PI_STATUS_DEBUG=1` to log title state transitions (spinner start/stop, restore) to stderr.
-
-## License
-
-[MIT](LICENSE)
