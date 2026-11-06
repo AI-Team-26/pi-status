@@ -29,8 +29,8 @@ function getExpectedBaseTitle(): string {
     return `${cwd}`
 }
 
-// Must mirror pi-status.ts exactly: Array.from(env || "π") interpolated into a template.
-const AGENT_ICON = Array.from(process.env.PI_STATUS_AGENT_ICON || "π").join("")
+
+const AGENT_ICON = "🤖"
 const EXPECTED_BASE_TITLE = getExpectedBaseTitle()
 const ESCAPED_ICON = AGENT_ICON.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 const SPINNER_FRAME_REGEX = new RegExp(
@@ -256,7 +256,7 @@ describe("context indicator", () => {
         expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ✅ ${EXPECTED_BASE_TITLE}`)
     })
 
-    it("spinner never includes context indicator, even at ≥90%", async () => {
+    it("spinner on: context is not shown, even at ≥90%", async () => {
         const ctx = createMockCtx({
             getContextUsage: () => ({
                 percent: 91,
