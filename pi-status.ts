@@ -22,7 +22,7 @@ import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-a
 const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
 /** First grapheme of PI_AGENT_NAME, e.g. "🟢", falling back to "π" */
-const AGENT = Array.from(process.env.PI_AGENT_NAME || "π")[0];
+const AGENT_ICON = Array.from(process.env.PI_AGENT_NAME || "π")[0];
 
 const DEBUG = process.env.PI_STATUS_DEBUG === "1";
 function log(msg: string) {
@@ -32,7 +32,7 @@ function log(msg: string) {
 function getBaseTitle(pi: ExtensionAPI): string {
 	const cwd = path.basename(process.cwd());
 	const session = pi.getSessionName();
-	return session ? `${AGENT} ${session} - ${cwd}` : `${AGENT} ${cwd}`;
+	return session ? `${AGENT_ICON} ${session} - ${cwd}` : `${AGENT_ICON} ${cwd}`;
 }
 
 function getContextIndicator(ctx: ExtensionContext): string {
