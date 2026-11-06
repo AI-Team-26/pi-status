@@ -15,6 +15,8 @@ A [pi](https://github.com/earendil-works/pi-coding-agent) extension that puts a 
 - The context-usage percentage is shown **only** beside the checkmark — never during the spinner. It's captured once when the agent finishes, not updated live.
 - `≤ 50 %` → percentage hidden; `> 50 %` → `[N%]`; `≥ 90 %` → `![N%]!` (high-usage warning).
 - ANSI colours don't work inside terminal-title OSC sequences, so everything is plain text.
+  
+If an environment variable **AGENT_NICKNAME** is found, it uses it in the terminal title; can be an EMOJI !
 
 ## Install
 
