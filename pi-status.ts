@@ -21,7 +21,7 @@ import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-a
 
 const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
-const AGENT_ICON = Array.from(process.env.AGENT_NICKNAME || "π");
+const AGENT_ICON = Array.from(process.env.PI_STATUS_AGENT_ICON || "π");
 
 const DEBUG = process.env.PI_STATUS_DEBUG === "1";
 function log(msg: string) {
