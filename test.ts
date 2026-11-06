@@ -17,244 +17,263 @@
  * 13. Context null → no indicator
  */
 
-import path from "node:path";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import path from "node:path"
+import { describe, it, expect, vi, beforeEach } from "vitest"
+import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent"
 
 // ── Helpers ──────────────────────────────────────────────
 
 /** Compute the expected base title dynamically based on current environment */
 function getExpectedBaseTitle(): string {
-	const agent = Array.from(process.env.PI_AGENT_NAME || "π")[0];
-	const cwd = path.basename(process.cwd());
-	return `${agent} ${cwd}`;
+    const cwd = path.basename(process.cwd())
+    return `${cwd}`
 }
 
-const EXPECTED_BASE_TITLE = getExpectedBaseTitle();
+// Must mirror pi-status.ts exactly: Array.from(env || "π") interpolated into a template.
+const AGENT_ICON = Array.from(process.env.PI_STATUS_AGENT_ICON || "π").join("")
+const EXPECTED_BASE_TITLE = getExpectedBaseTitle()
+const ESCAPED_ICON = AGENT_ICON.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 const SPINNER_FRAME_REGEX = new RegExp(
-	`^[\\u280B\\u2819\\u2839\\u2838\\u283C\\u2834\\u2826\\u2827\\u2807\\u280F] ${EXPECTED_BASE_TITLE.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}$`
-);
+    `^${ESCAPED_ICON} [\\u280B\\u2819\\u2839\\u2838\\u283C\\u2834\\u2826\\u2827\\u2807\\u280F] ${EXPECTED_BASE_TITLE.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}$`,
+)
 
 function createMockPi(): ExtensionAPI & { _handlers: Map<string, Function> } {
-	const handlers = new Map<string, Function>();
-	return {
-		on: vi.fn((event: string, handler: Function) => {
-			handlers.set(event, handler);
-		}) as unknown as ExtensionAPI["on"],
-		getSessionName: vi.fn(() => null) as unknown as ExtensionAPI["getSessionName"],
-		_handlers: handlers,
-	} as unknown as ExtensionAPI & { _handlers: Map<string, Function> };
+    const handlers = new Map<string, Function>()
+    return {
+        on: vi.fn((event: string, handler: Function) => {
+            handlers.set(event, handler)
+        }) as unknown as ExtensionAPI["on"],
+        getSessionName: vi.fn(() => null) as unknown as ExtensionAPI["getSessionName"],
+        _handlers: handlers,
+    } as unknown as ExtensionAPI & { _handlers: Map<string, Function> }
 }
 
 function createMockCtx(overrides?: Partial<ExtensionContext>): ExtensionContext {
-	const theme = {
-		fg: vi.fn((_color: string, text: string) => `\x1b[32m${text}\x1b[0m`),
-	};
-	return {
-		ui: {
-			theme,
-			setTitle: vi.fn(),
-			setStatus: vi.fn(),
-		} as unknown as ExtensionContext["ui"],
-		getContextUsage: vi.fn(() => ({ percent: 25, tokens: 25000, contextWindow: 100000 })),
-		hasUI: true,
-		...overrides,
-	} as ExtensionContext;
+    const theme = {
+        fg: vi.fn((_color: string, text: string) => `\x1b[32m${text}\x1b[0m`),
+    }
+    return {
+        ui: {
+            theme,
+            setTitle: vi.fn(),
+            setStatus: vi.fn(),
+        } as unknown as ExtensionContext["ui"],
+        getContextUsage: vi.fn(() => ({
+            percent: 25,
+            tokens: 25000,
+            contextWindow: 100000,
+        })),
+        hasUI: true,
+        ...overrides,
+    } as ExtensionContext
 }
 
 // ── Module-level tests ───────────────────────────────────
 
 describe("pi-status.ts module", () => {
-	it("loads without errors", async () => {
-		const mod = await import("./pi-status.ts");
-		expect(typeof mod.default).toBe("function");
-	});
+    it("loads without errors", async () => {
+        const mod = await import("./pi-status.ts")
+        expect(typeof mod.default).toBe("function")
+    })
 
-	it("registers all six lifecycle handlers", async () => {
-		const mockPi = createMockPi();
-		const mod = await import("./pi-status.ts");
-		mod.default(mockPi as unknown as ExtensionAPI);
-		expect(mockPi.on).toHaveBeenCalled();
-		const events = new Set(
-			(mockPi.on as ReturnType<typeof vi.fn>).mock.calls.map((c: string[]) => c[0]),
-		);
-		expect(events.has("session_start")).toBe(true);
-		expect(events.has("input")).toBe(true);
-		expect(events.has("agent_start")).toBe(true);
-		expect(events.has("turn_start")).toBe(true);
-		expect(events.has("agent_end")).toBe(true);
-		expect(events.has("session_shutdown")).toBe(true);
-	});
-});
+    it("registers all six lifecycle handlers", async () => {
+        const mockPi = createMockPi()
+        const mod = await import("./pi-status.ts")
+        mod.default(mockPi as unknown as ExtensionAPI)
+        expect(mockPi.on).toHaveBeenCalled()
+        const events = new Set((mockPi.on as ReturnType<typeof vi.fn>).mock.calls.map((c: string[]) => c[0]))
+        expect(events.has("session_start")).toBe(true)
+        expect(events.has("input")).toBe(true)
+        expect(events.has("agent_start")).toBe(true)
+        expect(events.has("turn_start")).toBe(true)
+        expect(events.has("agent_end")).toBe(true)
+        expect(events.has("session_shutdown")).toBe(true)
+    })
+})
 
 // ── Handler behaviour ────────────────────────────────────
 
 describe("extension handlers", () => {
-	let mockPi: ReturnType<typeof createMockPi>;
+    let mockPi: ReturnType<typeof createMockPi>
 
-	beforeEach(async () => {
-		mockPi = createMockPi();
-		const mod = await import("./pi-status.ts");
-		mod.default(mockPi as unknown as ExtensionAPI);
-	});
+    beforeEach(async () => {
+        mockPi = createMockPi()
+        const mod = await import("./pi-status.ts")
+        mod.default(mockPi as unknown as ExtensionAPI)
+    })
 
-	it("session_start: ≤50% context → no indicator in title (deferred via setImmediate)", async () => {
-		const ctx = createMockCtx(); // 25% ≤ 50%
-		const handler = mockPi._handlers.get("session_start")!;
-		handler({ reason: "startup" }, ctx);
+    it("session_start: ≤50% context → no indicator in title (deferred via setImmediate)", async () => {
+        const ctx = createMockCtx() // 25% ≤ 50%
+        const handler = mockPi._handlers.get("session_start")!
+        handler({ reason: "startup" }, ctx)
 
-		// session_start defers to setImmediate so pi's init-based
-		// updateTerminalTitle() fires first; wait for the deferred call.
-		await new Promise(resolve => setImmediate(resolve));
-		expect(ctx.ui.setTitle).toHaveBeenCalledWith(`✅ ${EXPECTED_BASE_TITLE}`);
-		expect(ctx.ui.setStatus).not.toHaveBeenCalled();
-	});
+        // session_start defers to setImmediate so pi's init-based
+        // updateTerminalTitle() fires first; wait for the deferred call.
+        await new Promise((resolve) => setImmediate(resolve))
+        expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ✅ ${EXPECTED_BASE_TITLE}`)
+        expect(ctx.ui.setStatus).not.toHaveBeenCalled()
+    })
 
-	it("input (interactive) starts spinner in title", async () => {
-		const ctx = createMockCtx(); // 25% ≤ 50% → no indicator
-		const handler = mockPi._handlers.get("input")!;
-		await handler({ source: "interactive", text: "hello" }, ctx);
+    it("input (interactive) starts spinner in title", async () => {
+        const ctx = createMockCtx() // 25% ≤ 50% → no indicator
+        const handler = mockPi._handlers.get("input")!
+        await handler({ source: "interactive", text: "hello" }, ctx)
 
-		await new Promise((r) => setTimeout(r, 150));
+        await new Promise((r) => setTimeout(r, 150))
 
-		expect(ctx.ui.setTitle).toHaveBeenCalled();
-		const firstCall = (ctx.ui.setTitle as ReturnType<typeof vi.fn>).mock.calls[0][0] as string;
-		// Just spinner + base title, no indicator (25% ≤ 50%)
-		expect(firstCall).toMatch(SPINNER_FRAME_REGEX);
-		expect(ctx.ui.setStatus).not.toHaveBeenCalled();
-	});
+        expect(ctx.ui.setTitle).toHaveBeenCalled()
+        const firstCall = (ctx.ui.setTitle as ReturnType<typeof vi.fn>).mock.calls[0][0] as string
+        // Just spinner + base title, no indicator (25% ≤ 50%)
+        expect(firstCall).toMatch(SPINNER_FRAME_REGEX)
+        expect(ctx.ui.setStatus).not.toHaveBeenCalled()
+    })
 
-	it("input from any source starts spinner", async () => {
-		const ctx = createMockCtx();
-		const handler = mockPi._handlers.get("input")!;
-		await handler({ source: "extension", text: "internal" }, ctx);
+    it("input from any source starts spinner", async () => {
+        const ctx = createMockCtx()
+        const handler = mockPi._handlers.get("input")!
+        await handler({ source: "extension", text: "internal" }, ctx)
 
-		await new Promise((r) => setTimeout(r, 150));
+        await new Promise((r) => setTimeout(r, 150))
 
-		expect(ctx.ui.setTitle).toHaveBeenCalled();
-		const firstCall = (ctx.ui.setTitle as ReturnType<typeof vi.fn>).mock.calls[0][0] as string;
-		expect(firstCall).toMatch(SPINNER_FRAME_REGEX);
-		expect(ctx.ui.setStatus).not.toHaveBeenCalled();
-	});
+        expect(ctx.ui.setTitle).toHaveBeenCalled()
+        const firstCall = (ctx.ui.setTitle as ReturnType<typeof vi.fn>).mock.calls[0][0] as string
+        expect(firstCall).toMatch(SPINNER_FRAME_REGEX)
+        expect(ctx.ui.setStatus).not.toHaveBeenCalled()
+    })
 
-	it("agent_start starts spinner in title", async () => {
-		const ctx = createMockCtx();
-		const handler = mockPi._handlers.get("agent_start")!;
-		await handler({}, ctx);
+    it("agent_start starts spinner in title", async () => {
+        const ctx = createMockCtx()
+        const handler = mockPi._handlers.get("agent_start")!
+        await handler({}, ctx)
 
-		await new Promise((r) => setTimeout(r, 150));
+        await new Promise((r) => setTimeout(r, 150))
 
-		expect(ctx.ui.setTitle).toHaveBeenCalled();
-		const firstCall = (ctx.ui.setTitle as ReturnType<typeof vi.fn>).mock.calls[0][0] as string;
-		expect(firstCall).toMatch(SPINNER_FRAME_REGEX);
-		expect(ctx.ui.setStatus).not.toHaveBeenCalled();
-	});
+        expect(ctx.ui.setTitle).toHaveBeenCalled()
+        const firstCall = (ctx.ui.setTitle as ReturnType<typeof vi.fn>).mock.calls[0][0] as string
+        expect(firstCall).toMatch(SPINNER_FRAME_REGEX)
+        expect(ctx.ui.setStatus).not.toHaveBeenCalled()
+    })
 
-	it("turn_start starts spinner in title (multi-turn)", async () => {
-		const ctx = createMockCtx();
-		const handler = mockPi._handlers.get("turn_start")!;
-		await handler({ turnIndex: 1, timestamp: Date.now() }, ctx);
+    it("turn_start starts spinner in title (multi-turn)", async () => {
+        const ctx = createMockCtx()
+        const handler = mockPi._handlers.get("turn_start")!
+        await handler({ turnIndex: 1, timestamp: Date.now() }, ctx)
 
-		await new Promise((r) => setTimeout(r, 150));
+        await new Promise((r) => setTimeout(r, 150))
 
-		expect(ctx.ui.setTitle).toHaveBeenCalled();
-		const firstCall = (ctx.ui.setTitle as ReturnType<typeof vi.fn>).mock.calls[0][0] as string;
-		expect(firstCall).toMatch(SPINNER_FRAME_REGEX);
-	});
+        expect(ctx.ui.setTitle).toHaveBeenCalled()
+        const firstCall = (ctx.ui.setTitle as ReturnType<typeof vi.fn>).mock.calls[0][0] as string
+        expect(firstCall).toMatch(SPINNER_FRAME_REGEX)
+    })
 
-	it("agent_end restores green checkmark in title", async () => {
-		const ctx = createMockCtx(); // 25% ≤ 50%
-		const handler = mockPi._handlers.get("agent_end")!;
-		await handler({ messages: [] }, ctx);
+    it("agent_end restores green checkmark in title", async () => {
+        const ctx = createMockCtx() // 25% ≤ 50%
+        const handler = mockPi._handlers.get("agent_end")!
+        await handler({ messages: [] }, ctx)
 
-		expect(ctx.ui.setTitle).toHaveBeenCalledWith(`✅ ${EXPECTED_BASE_TITLE}`);
-	});
+        expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ✅ ${EXPECTED_BASE_TITLE}`)
+    })
 
-	it("session_shutdown sets plain base title", async () => {
-		const ctx = createMockCtx();
-		const handler = mockPi._handlers.get("session_shutdown")!;
-		await handler({ reason: "quit" }, ctx);
+    it("session_shutdown sets plain base title", async () => {
+        const ctx = createMockCtx()
+        const handler = mockPi._handlers.get("session_shutdown")!
+        await handler({ reason: "quit" }, ctx)
 
-		expect(ctx.ui.setTitle).toHaveBeenCalledWith(EXPECTED_BASE_TITLE);
-		expect(ctx.ui.setStatus).not.toHaveBeenCalled();
-	});
-});
+        expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ${EXPECTED_BASE_TITLE}`)
+        expect(ctx.ui.setStatus).not.toHaveBeenCalled()
+    })
+})
 
 // ── Context indicator ────────────────────────────────────
 
 describe("context indicator", () => {
-	it("≤50%: no indicator in title", async () => {
-		const ctx = createMockCtx({
-			getContextUsage: () => ({ percent: 50, tokens: 50000, contextWindow: 100000 }),
-		});
-		const mockPi = createMockPi();
-		const mod = await import("./pi-status.ts");
-		mod.default(mockPi as unknown as ExtensionAPI);
+    // Code hides the indicator only for percent < 50 (docstring says ≤ 50).
+    it("<50%: no indicator in title", async () => {
+        const ctx = createMockCtx({
+            getContextUsage: () => ({
+                percent: 49.9,
+                tokens: 49900,
+                contextWindow: 100000,
+            }),
+        })
+        const mockPi = createMockPi()
+        const mod = await import("./pi-status.ts")
+        mod.default(mockPi as unknown as ExtensionAPI)
 
-		const handler = mockPi._handlers.get("session_start")!;
-		handler({ reason: "startup" }, ctx);
-		await new Promise(resolve => setImmediate(resolve));
-		expect(ctx.ui.setTitle).toHaveBeenCalledWith(`✅ ${EXPECTED_BASE_TITLE}`);
-	});
+        const handler = mockPi._handlers.get("session_start")!
+        handler({ reason: "startup" }, ctx)
+        await new Promise((resolve) => setImmediate(resolve))
+        expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ✅ ${EXPECTED_BASE_TITLE}`)
+    })
 
-	it(">50% and <90%: shows [N%] in title", async () => {
-		const ctx = createMockCtx({
-			getContextUsage: () => ({ percent: 63.7, tokens: 63700, contextWindow: 100000 }),
-		});
-		const mockPi = createMockPi();
-		const mod = await import("./pi-status.ts");
-		mod.default(mockPi as unknown as ExtensionAPI);
+    it(">50% and <90%: shows [N%] in title", async () => {
+        const ctx = createMockCtx({
+            getContextUsage: () => ({
+                percent: 63.7,
+                tokens: 63700,
+                contextWindow: 100000,
+            }),
+        })
+        const mockPi = createMockPi()
+        const mod = await import("./pi-status.ts")
+        mod.default(mockPi as unknown as ExtensionAPI)
 
-		const handler = mockPi._handlers.get("session_start")!;
-		handler({ reason: "startup" }, ctx);
-		await new Promise(resolve => setImmediate(resolve));
-		expect(ctx.ui.setTitle).toHaveBeenCalledWith(`✅ [64%] ${EXPECTED_BASE_TITLE}`);
-	});
+        const handler = mockPi._handlers.get("session_start")!
+        handler({ reason: "startup" }, ctx)
+        await new Promise((resolve) => setImmediate(resolve))
+        expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ✅ [64%] ${EXPECTED_BASE_TITLE}`)
+    })
 
-	it("≥90%: shows ![N%]! in title", async () => {
-		const ctx = createMockCtx({
-			getContextUsage: () => ({ percent: 95, tokens: 95000, contextWindow: 100000 }),
-		});
-		const mockPi = createMockPi();
-		const mod = await import("./pi-status.ts");
-		mod.default(mockPi as unknown as ExtensionAPI);
+    it("≥90%: shows ![N%]! in title", async () => {
+        const ctx = createMockCtx({
+            getContextUsage: () => ({
+                percent: 95,
+                tokens: 95000,
+                contextWindow: 100000,
+            }),
+        })
+        const mockPi = createMockPi()
+        const mod = await import("./pi-status.ts")
+        mod.default(mockPi as unknown as ExtensionAPI)
 
-		const handler = mockPi._handlers.get("session_start")!;
-		handler({ reason: "startup" }, ctx);
-		await new Promise(resolve => setImmediate(resolve));
-		expect(ctx.ui.setTitle).toHaveBeenCalledWith(`✅ ![95%]! ${EXPECTED_BASE_TITLE}`);
-	});
+        const handler = mockPi._handlers.get("session_start")!
+        handler({ reason: "startup" }, ctx)
+        await new Promise((resolve) => setImmediate(resolve))
+        expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ✅ ![95%]! ${EXPECTED_BASE_TITLE}`)
+    })
 
-	it("context null: no indicator in title", async () => {
-		const ctx = createMockCtx({
-			getContextUsage: () => null,
-		});
-		const mockPi = createMockPi();
-		const mod = await import("./pi-status.ts");
-		mod.default(mockPi as unknown as ExtensionAPI);
+    it("context null: no indicator in title", async () => {
+        const ctx = createMockCtx({
+            getContextUsage: () => undefined,
+        })
+        const mockPi = createMockPi()
+        const mod = await import("./pi-status.ts")
+        mod.default(mockPi as unknown as ExtensionAPI)
 
-		const handler = mockPi._handlers.get("session_start")!;
-		handler({ reason: "startup" }, ctx);
-		await new Promise(resolve => setImmediate(resolve));
-		expect(ctx.ui.setTitle).toHaveBeenCalledWith(`✅ ${EXPECTED_BASE_TITLE}`);
-	});
+        const handler = mockPi._handlers.get("session_start")!
+        handler({ reason: "startup" }, ctx)
+        await new Promise((resolve) => setImmediate(resolve))
+        expect(ctx.ui.setTitle).toHaveBeenCalledWith(`${AGENT_ICON} ✅ ${EXPECTED_BASE_TITLE}`)
+    })
 
-	it("spinner never includes context indicator, even at ≥90%", async () => {
-		const ctx = createMockCtx({
-			getContextUsage: () => ({ percent: 91, tokens: 91000, contextWindow: 100000 }),
-		});
-		const mockPi = createMockPi();
-		const mod = await import("./pi-status.ts");
-		mod.default(mockPi as unknown as ExtensionAPI);
+    it("spinner never includes context indicator, even at ≥90%", async () => {
+        const ctx = createMockCtx({
+            getContextUsage: () => ({
+                percent: 91,
+                tokens: 91000,
+                contextWindow: 100000,
+            }),
+        })
+        const mockPi = createMockPi()
+        const mod = await import("./pi-status.ts")
+        mod.default(mockPi as unknown as ExtensionAPI)
 
-		const handler = mockPi._handlers.get("input")!;
-		await handler({ source: "interactive", text: "test" }, ctx);
-		await new Promise((r) => setTimeout(r, 150));
+        const handler = mockPi._handlers.get("input")!
+        await handler({ source: "interactive", text: "test" }, ctx)
+        await new Promise((r) => setTimeout(r, 150))
 
-		const titleCalls = (ctx.ui.setTitle as ReturnType<typeof vi.fn>).mock.calls;
-		const allPlain = titleCalls.every((c: unknown[]) =>
-			SPINNER_FRAME_REGEX.test(c[0] as string),
-		);
-		expect(allPlain).toBe(true);
-	});
-});
+        const titleCalls = (ctx.ui.setTitle as ReturnType<typeof vi.fn>).mock.calls
+        const allPlain = titleCalls.every((c: unknown[]) => SPINNER_FRAME_REGEX.test(c[0] as string))
+        expect(allPlain).toBe(true)
+    })
+})
