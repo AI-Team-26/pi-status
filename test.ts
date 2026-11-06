@@ -30,14 +30,10 @@ function getExpectedBaseTitle(): string {
 }
 
 
-// Normalise icon env vars so tests are deterministic regardless of the ambient
-// environment (which may export PI_STATUS_*_ICON). The module reads these once
-// at import time, so they must be settled before the first dynamic import.
-delete process.env.PI_STATUS_IDLE_ICON
-
 const AGENT_ICON = "🤖"
 const IDLE_ICON = "✔️"
 process.env.PI_STATUS_AGENT_ICON = AGENT_ICON
+process.env.PI_STATUS_IDLE_ICON = IDLE_ICON
 
 const EXPECTED_BASE_TITLE = getExpectedBaseTitle()
 const SPINNER_FRAME_REGEX = new RegExp(
