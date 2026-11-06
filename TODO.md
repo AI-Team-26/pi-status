@@ -1,11 +1,5 @@
-# In Progress
-
-- [x] **[fix/01_readme_updates]** Fix outdated fork information and asset paths in README
-  - [x] Rename `spinner.svg` reference to `.png`
-  - [x] Update GitHub install URL from old fork (`ZoRDoK/pi-idle`) to current repo (`AI-Team-26/pi-status`)
-  - [ ] Push branch and open PR
+# TODO
 
 ## Backlog
-
-### Completed
-
+- Feature 5 | **[docs/05_readme_snapshots]** Update the screenshots/snapshots in the README
+- Feature 6 | Use a env var (PI_STATUS_DONE_ICON) to override the "done" icon, use ✔️  as default instead of ✅

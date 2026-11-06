@@ -1,34 +1,36 @@
 {
-	"name": "pi-status",
-	"version": "1.0.7",
-	"description": "Pi extension: shows green ✓ in terminal title when idle, braille-dot spinner (⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏) while working, with context-usage percentage beside the checkmark",
-	"keywords": [
-		"status",
-		"idle",
-		"done",
-		"spinner",
-		"pi-extension",
-		"pi-package"
-	],
-	"type": "module",
-	"license": "MIT",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/AI-Team-26/pi-status"
-	},
-	"scripts": {
-		"test": "vitest run",
-		"test:watch": "vitest"
-	},
-	"engines": {
-		"node": ">=22.0.0"
-	},
-	"pi": {
-		"extensions": [
-			"./pi-status.ts"
-		]
-	},
-	"devDependencies": {
-		"vitest": "^3.2.4"
-	}
+  "name": "pi-status",
+  "version": "1.0.8",
+  "description": "Pi extension: shows green ✓ in terminal title when idle, braille-dot spinner (⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏) while working, with context-usage percentage beside the checkmark",
+  "keywords": [
+    "status",
+    "idle",
+    "done",
+    "spinner",
+    "pi-extension"
+  ],
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AI-Team-26/pi-status"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "pi": {
+    "extensions": [
+      "./pi-status.ts"
+    ]
+  },
+  "packageManager": "pnpm@12.18.0",
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "^1.5.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
 }
